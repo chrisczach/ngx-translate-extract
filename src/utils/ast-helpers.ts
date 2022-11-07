@@ -7,7 +7,8 @@ import {
 	ConstructorDeclaration,
 	CallExpression,
 	Expression,
-	PropertyAccessExpression
+	PropertyAccessExpression,
+	isObjectLiteralExpression
 } from 'typescript';
 
 import pkg from 'typescript';
@@ -113,6 +114,15 @@ export function getStringsFromExpression(expression: Expression): string[] {
 		return expression.elements.reduce((result: string[], element: Expression) => {
 			const strings = getStringsFromExpression(element);
 			return [...result, ...strings];
+		}, []);
+	}
+
+	if (isObjectLiteralExpression(expression)) {
+		return expression.properties.reduce((result: string[], element) => {
+			if (element.kind === SyntaxKind.PropertyAssignment) {
+				result.push(...getStringsFromExpression(element.initializer));
+			}
+			return result;
 		}, []);
 	}
 
